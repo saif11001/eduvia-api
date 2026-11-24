@@ -1,3 +1,5 @@
+import { signupService } from "../services/auth.service.js";
+
 export const signup = async (req, res, next) => {
     const user = await signupService(req.body);
     res.status(201).json({ success: true, user })
