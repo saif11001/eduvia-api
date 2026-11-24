@@ -28,3 +28,13 @@ uploads/
 tmp/
 
 #
+/generated/prisma
+
+# AI tool folders
+.claude/
+.windsurf/
+.agents/
+skills-lock.json
+
+# Prisma generated client
+generated/
