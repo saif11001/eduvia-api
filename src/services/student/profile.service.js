@@ -9,3 +9,24 @@ export const getProfileService = async (userId) => {
     }
     return sanitizeUser(user);
 }
+
+export const updateProfileServce = async (userId, { firstName, lastName, avatar }) => {
+    let avatarUrl;
+
+    if (avatar) {
+        const result = await cloudinary.uploader.upload(avatar, {
+            folder: "avatars",
+            public_id: `user_${userId}`,
+            overwrite: true,
+            transformation: [{ width: 256, height: 256, crop: "fill", gravity: "face" }],
+        });
+        avatarUrl = result.secure_url;
+    }
+
+    const user = await prisma.user.update({
+        where: { id: userId },
+        data: { firstName, lastName, avatar: avatarUrl },
+    });
+
+    return sanitizeUser(user);
+}

@@ -21,7 +21,7 @@ app.use(
     })
 );
 app.use(cookieParser());
-app.use(express.json({ limit: "50kb" }));
+app.use(express.json({ limit: "3mb" }));
 
 app.use("/api/auth", authRouter);
 app.use("/api/profile", profileRouter);

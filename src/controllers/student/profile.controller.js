@@ -4,3 +4,8 @@ export const getProfile = async (req, res, next) => {
     const user = await getProfileService(req.user.id);
     res.status(200).json({ success: true, user });
 }
+
+export const updateProfile = async (req, res, next) => {
+    const user = await updateProfileServce(req.user.id, req.body);
+    res.status(200).json({ success: true, user })
+}
