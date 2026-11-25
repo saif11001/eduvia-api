@@ -22,3 +22,11 @@ export const signupRules = [
     body("role")
         .isIn(["STUDENT", "INSTRUCTOR"]).withMessage("Role must be STUDENT or INSTRUCTOR"),
 ];
+
+export const verifyEmailRules = [
+    body("email").trim().isEmail().withMessage("Invalid email").toLowerCase(),
+    body("code")
+        .trim()
+        .isLength({ min: 6, max: 6 }).withMessage("Code must be 6 digits")
+        .isNumeric().withMessage("Code must be numbers only"),
+];
