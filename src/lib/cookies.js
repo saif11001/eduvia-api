@@ -19,6 +19,13 @@ export const setCookies = (res, accessToken, refreshToken) => {
         });
 };
 
+export const setAccessCookie = (res, accessToken) => {
+    res.cookie("accessToken", accessToken, {
+        ...cookieOptions,
+        maxAge: 15 * 60 * 1000,
+    });
+};
+
 export const clearAuthCookies = (res) => {
     res.clearCookie("accessToken", cookieOptions);
     res.clearCookie("refreshToken", cookieOptions);

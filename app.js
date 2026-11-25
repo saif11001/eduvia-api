@@ -5,9 +5,10 @@ import cookieParser from "cookie-parser";
 
 import prisma from "./src/config/prisma.js";
 import redis from "./src/config/redis.js";
+import { errorHandler, notFound } from "./src/middlewares/error.middleware.js";
 
 import authRouter from "./src/routes/auth.route.js";
-import { errorHandler, notFound } from "./src/middlewares/error.middleware.js";
+import profileRouter from "./src/routes/student/profile.route.js";
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.use(cookieParser());
 app.use(express.json({ limit: "50kb" }));
 
 app.use("/api/auth", authRouter);
+app.use("/api/profile", profileRouter);
 
 app.use(notFound);
 app.use(errorHandler);

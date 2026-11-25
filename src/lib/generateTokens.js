@@ -6,3 +6,9 @@ export const generateTokens = (userId) => {
 
     return { accessToken, refreshToken };
 }
+
+export const generateAccessToken = (userId) => {
+    const accessToken = jwt.sign({ userId }, process.env.ACCESS_TOKEN, { expiresIn: "15m" });
+
+    return { accessToken };
+}
