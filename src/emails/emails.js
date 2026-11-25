@@ -1,5 +1,5 @@
 import { sendEmail } from "./mail.js";
-import { verifyEmailTemplate, welcomeEmailTemplate } from "./emailTemplates.js";
+import { verifyEmailTemplate, welcomeEmailTemplate, resetPasswordTemplate } from "./emailTemplates.js";
 
 export const sendVerificationEmail = async ({ email, name, code }) => {
     const html = verifyEmailTemplate(name, code);
@@ -9,4 +9,9 @@ export const sendVerificationEmail = async ({ email, name, code }) => {
 export const sendWelcomeEmail = async ({ email, name }) => {
     const html = welcomeEmailTemplate(name);
     await sendEmail({ to: email, subject: "Welcome to Eduvia", html });
+};
+
+export const sendResetPasswordEmail = async ({ email, name, link }) => {
+    const html = resetPasswordTemplate(name, link);
+    await sendEmail({ to: email, subject: "Reset your Eduvia password", html });
 };

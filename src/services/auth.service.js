@@ -1,10 +1,15 @@
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
-import prisma from "../lib/prisma.js";
-import redis from "../lib/redis.js";
-import { sendVerificationEmail, sendWelcomeEmail } from "../lib/emails.js";
+import prisma from "../config/prisma.js";
+import redis from "../config/redis.js";
+import jwt from "jsonwebtoken";
+import { sendResetPasswordEmail, sendVerificationEmail, sendWelcomeEmail } from "../emails/emails.js";
 import { sanitizeUser } from "../lib/sanitizeUser.js";
 import AppError from "../lib/AppError.js";
+import { generateTokens } from "../lib/generateTokens.js";
+import { deleteRefreshToken, storeRefreshToken } from "../lib/refreshToken.js";
+
+const sha256 = (value) => crypto.createHash("sha256").update(value).digest("hex");
 
 const sendVerificationCode = async (user) => {
     const allowed = await redis.set(`verify:cooldown:${user.id}`, "1", "EX", 60, "NX");
@@ -97,5 +102,90 @@ export const verifyEmailService = async ({ email, code }) => {
         });
     } catch { }
 
-    return sanitizeUser(verifiedUser);
+    const { accessToken, refreshToken } = generateTokens(verifiedUser.id);
+    await storeRefreshToken(verifiedUser.id, refreshToken);
+
+    return { user: sanitizeUser(verifiedUser), accessToken, refreshToken };
+};
+
+export const resendVerificationService = async ({ email }) => {
+    const user = await prisma.user.findUnique({ where: { email } });
+
+    if (!user || user.emailVerified) return;
+
+    await sendVerificationCode(user);
+};
+
+export const loginService = async ({ email, password }) => {
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user || !user.password) {
+        throw new AppError("Invalid email or password", 401);
+    }
+
+    const isEqual = await bcrypt.compare(password, user.password);
+    if (!isEqual) {
+        throw new AppError("Wrong password", 401);
+    }
+
+    if (!user.isActive) {
+        throw new AppError("This account has been deactivated", 403);
+    }
+
+    if (!user.emailVerified) {
+        throw new AppError("Please verify your email first", 403);
+    }
+
+    const { accessToken, refreshToken } = generateTokens(user.id);
+    await storeRefreshToken(user.id, refreshToken);
+
+    return { user: sanitizeUser(user), accessToken, refreshToken };
+};
+
+export const logoutService = async (refreshToken) => {
+    if (!refreshToken) return;
+
+    let decoded;
+    try {
+        decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN);
+    } catch {
+        return;
+    }
+
+    await deleteRefreshToken(decoded.userId);
+};
+
+export const forgotPasswordService = async ({ email }) => {
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user || !user.isActive) return;
+
+    const allowed = await redis.set(`reset:cooldown:${user.id}`, "1", "EX", 60, "NX");
+    if (!allowed) return;
+
+    const token = crypto.randomBytes(32).toString("hex");
+
+    await redis.set(`reset:token:${sha256(token)}`, user.id, "EX", 3600);
+
+    const link = `${process.env.CLIENT_URL}/reset-password?token=${token}`;
+
+    await sendResetPasswordEmail({
+        email: user.email,
+        name: user.firstName,
+        link,
+    });
+};
+
+export const resetPasswordService = async ({ token, password }) => {
+    const userId = await redis.getdel(`reset:token:${sha256(token)}`);
+    if (!userId) {
+        throw new AppError("Invalid or expired reset link", 400);
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    await prisma.user.update({
+        where: { id: userId },
+        data: { password: hashedPassword },
+    });
+
+    await deleteRefreshToken(userId);
 };
