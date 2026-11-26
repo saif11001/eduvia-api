@@ -4,11 +4,12 @@ import { getProfile } from "../../controllers/student/profile.controller.js";
 import { updateProfileRules } from "../../validators/profile.validator.js";
 import { validate } from "../../middlewares/validate.middleware.js";
 import { updateProfile } from "../../controllers/student/profile.controller.js";
+import { requireRole } from "../../middlewares/requireRole.js";
 
 const router = express.Router();
 
-router.get("/", verifyToken, getProfile);
+router.get("/", verifyToken, requireRole("STUDENT"), getProfile);
 
-router.patch("/", verifyToken, updateProfileRules, validate, updateProfile);
+router.patch("/", verifyToken, updateProfileRules, validate, requireRole("STUDENT"), updateProfile);
 
-export default router
+export default router;

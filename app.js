@@ -9,6 +9,7 @@ import { errorHandler, notFound } from "./src/middlewares/error.middleware.js";
 
 import authRouter from "./src/routes/auth.route.js";
 import profileRouter from "./src/routes/student/profile.route.js";
+import instructorProfileRouter from "./src/routes/instructor/profile.route.js";
 
 const app = express();
 
@@ -25,6 +26,7 @@ app.use(express.json({ limit: "3mb" }));
 
 app.use("/api/auth", authRouter);
 app.use("/api/profile", profileRouter);
+app.use("/api/instructor/profile", instructorProfileRouter);
 
 app.use(notFound);
 app.use(errorHandler);
