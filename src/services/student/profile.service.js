@@ -1,3 +1,4 @@
+import cloudinary from "../../config/cloudinary.js";
 import prisma from "../../config/prisma.js"
 import AppError from "../../lib/AppError.js";
 import { sanitizeUser } from "../../lib/sanitizeUser.js";

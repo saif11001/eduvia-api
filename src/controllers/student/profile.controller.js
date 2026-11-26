@@ -1,4 +1,4 @@
-import { getProfileService } from "../../services/student/profile.service.js";
+import { getProfileService, updateProfileServce } from "../../services/student/profile.service.js";
 
 export const getProfile = async (req, res, next) => {
     const user = await getProfileService(req.user.id);

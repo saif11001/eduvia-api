@@ -11,4 +11,4 @@ router.get("/", verifyToken, getProfile);
 
 router.patch("/", verifyToken, updateProfileRules, validate, updateProfile);
 
-export default router;
+export default router
