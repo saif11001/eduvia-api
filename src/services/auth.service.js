@@ -132,7 +132,11 @@ export const loginService = async ({ email, password }) => {
     }
 
     if (!user.emailVerified) {
-        throw new AppError("Please verify your email first", 403);
+        try {
+            await sendVerificationCode(user);
+        } catch { }
+
+        throw new AppError("Please verify your email first", 403, "EMAIL_NOT_VERIFIED");
     }
 
     const { accessToken, refreshToken } = generateTokens(user.id);

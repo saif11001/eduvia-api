@@ -4,7 +4,7 @@ export const notFound = (req, res) => {
 
 export const errorHandler = (err, req, res, next) => {
     if (err.status) {
-        return res.status(err.status).json({ message: err.message });
+        return res.status(err.status).json({ message: err.message, code: err.code });
     }
 
     if (err.type === "entity.parse.failed") {
